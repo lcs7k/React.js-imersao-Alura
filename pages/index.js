@@ -1,34 +1,8 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import appConfig from '../config.json';
 
-function GlobalStyle() {
-    return (
-        <style global jsx>{`
-        * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: 'Open Sans', sans-serif;
-      }
-      /* App fit Height */ 
-      html, body, #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-      /* ./App fit Height */ 
-    `}</style>
-    )
-}
 
 function Titulo(props) {
     const Tag = props.tag || 'h1';
@@ -62,11 +36,42 @@ function Titulo(props) {
 //  export default HomePage
 
 export default function PaginaInicial() {
-    const username = 'Lucas';
+    // const username = 'Lucas';
+    const [username, setUsername] = React.useState('Lcs7k');
+    const [githubAccount, setGithubAccount] = React.useState('')
+    const roteamento = useRouter();
+
+    useEffect(() => {
+
+        fetch(`https://api.github.com/users/${username}`)
+
+            .then((res) => {
+               
+                if (!res.ok) {
+                throw Error('Erro na requisição')
+
+                }
+
+                return res.json()
+
+            })
+
+            .then((resultado) => {
+
+                setGithubAccount(resultado)
+
+            })
+
+            .catch(err => {
+
+                console.log(err.message)
+
+            })
+
+    }, [username])
 
     return (
         <>
-            <GlobalStyle />
             <Box
                 styleSheet={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -80,7 +85,7 @@ export default function PaginaInicial() {
                         backgroundImage: 'url(https://colunadofla.com/wp-content/uploads/2016/05/b6609-fundo_topo-ico-1280x720.jpg)',
                         display: 'flex',
                         alignItems: 'center',
-                        backgroundSize:'contain',
+                        backgroundSize: 'contain',
                         justifyContent: 'space-between',
                         flexDirection: {
                             xs: 'column',
@@ -95,6 +100,11 @@ export default function PaginaInicial() {
                     {/* Formulário */}
                     <Box
                         as="form"
+                        onSubmit={function (infosDoEvento) {
+                            infosDoEvento.preventDefault();
+                            roteamento.push('/chat');
+                            //tem como mudar de pagina assim tambem window.location.href = '/chat';
+                        }}
                         styleSheet={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                             width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
@@ -104,8 +114,15 @@ export default function PaginaInicial() {
                         <Text variant="body3" styleSheet={{ marginBottom: '32px', color: appConfig.theme.colors.neutrals[300] }}>
                             {appConfig.name}
                         </Text>
-
                         <TextField
+                            value={username}
+                            onChange={function (event) {
+                                // aonde esta o valor
+                                const valor = event.target.value;
+                                // trocando o valor da variavel
+                                // Atraves do react avisa quem precisa
+                                setUsername(valor);
+                            }}
                             fullWidth
                             textFieldColors={{
                                 neutral: {
@@ -132,40 +149,83 @@ export default function PaginaInicial() {
 
 
                     {/* Photo Area */}
-                    <Box
-                        styleSheet={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            maxWidth: '200px',
-                            padding: '16px',
-                            backgroundColor: appConfig.theme.colors.neutrals[800],
-                            border: '1px solid',
-                            borderColor: appConfig.theme.colors.neutrals[999],
-                            borderRadius: '10px',
-                            flex: 1,
-                            minHeight: '240px',
-                        }}
-                    >
-                        <Image
+
+                    {username.length > 2 && (
+
+                        <Box
+
                             styleSheet={{
-                                borderRadius: '50%',
-                                marginBottom: '16px',
+
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                maxWidth: '200px',
+                                padding: '16px',
+                                backgroundColor: appConfig.theme.colors[700],
+                                border: '1px solid',
+                                borderColor: appConfig.theme.colors.neutrals[999],
+                                borderRadius: '10px',
+                                flex: 1,
+                                minHeight: '240px',
+
                             }}
-                            src={`https://avatars.githubusercontent.com/u/54292513?v=4`}
-                        />
-                        <Text
-                            variant="body4"
-                            styleSheet={{
-                                color: appConfig.theme.colors.neutrals[200],
-                                backgroundColor: appConfig.theme.colors.neutrals[900],
-                                padding: '3px 10px',
-                                borderRadius: '1000px'
-                            }}
+
                         >
-                            {username}
-                        </Text>
-                    </Box>
+
+                            <Image
+
+                                styleSheet={{
+                                    borderRadius: '50%',
+                                    marginBottom: '16px',
+
+                                }}
+
+                                src={`https://github.com/${username}.png`}
+
+                            />
+
+                            <Box
+
+                                styleSheet={{
+ 
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center'
+
+                                }}
+
+                            >
+
+                                <Text
+
+                                    variant="body4"
+
+                                    styleSheet={{
+ 
+                                        color: appConfig.theme.colors.neutrals[200],
+                                        backgroundColor: appConfig.theme.colors.neutrals[900],
+                                        padding: '3px 10px',
+                                        borderRadius: '1000px'
+
+                                    }}
+
+                                >
+                                 {username}
+                                </Text>
+                                <ul
+
+                                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+
+                                >
+                                    <li><Text variant="body4" styleSheet={{ color: appConfig.theme.colors.neutrals[300] }}> {githubAccount.name} </Text></li>
+                                    <li><Text variant="body4" styleSheet={{ color: appConfig.theme.colors.neutrals[300] }}> {githubAccount.location} </Text></li>
+                                    <li><a variant="body4" style={{ border: 'solid 1px grey', padding: '0px 5px', borderRadius: '10px', textDecoration: 'none', color: appConfig.theme.colors.neutrals[300], fontSize: '10px', cursor: 'pointer' }} href={githubAccount.html_url}> Go to Git</a></li>
+
+                                </ul>
+                            </Box>
+                        </Box>
+                    )}
+
                     {/* Photo Area */}
                 </Box>
             </Box>
