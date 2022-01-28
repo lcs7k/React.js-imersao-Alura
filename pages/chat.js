@@ -1,10 +1,31 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React, { useState } from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js'
+
+
+// Como fazer AJAX: https://medium.com/@omariosouto/entendendo-como-fazer-ajax-com-a-fetchapi-977ff20da3c6
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyODc0MywiZXhwIjoxOTU4OTA0NzQzfQ.dLGY0guoZ9Q8-jIuWuural4azN12-d8Q2t_oAW9wf8k';
+const SUPABASE_URL = 'https://yruwqnfdlarhpbglcqdm.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = useState('');
     const [mensagemList, setMensagemList] = useState([]);
+    const [loading, setLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        supabaseClient
+          .from('mensagens')
+          .select('*')
+          .order('id', { ascending: false })
+          .then(({ data }) => {
+            console.log('Dados da consulta:', data);
+            setMensagemList(data);
+            setLoading(true);
+          });
+      }, []);
 
     /*
     // Usuário
@@ -19,29 +40,61 @@ export default function ChatPage() {
     */
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: mensagemList.length + (Math.random() * 100),
+            //id: mensagemList.length + (Math.random() * 100),
             user: 'Lcs7k',
             text: novaMensagem,
         };
+
+        supabaseClient
+        .from('mensagens')
+        .insert([
+          // Tem que ser um objeto com os MESMOS CAMPOS que você escreveu no supabase
+          mensagem
+        ])
+        .then(({ data }) => {
+
 
         setMensagemList([
             mensagem,
             ...mensagemList,
         ]);
         setMensagem('');
-    }
+    
+        });
 
-    function handleDeleteMensagem(event) {
-        const mensagemId = Number(event.target.dataset.id)
-        const mensagemListFilter = mensagemList.filter((mensagemFilter) => {
+        }
+        if (loading === false) {
+            return (
+                <>
+                    <Box
+                        styleSheet={{
+                            
+                            backgroundColor: appConfig.theme.colors.primary[500],
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            
+                            
+                        }}
+                    >
+                        <img className='load'  src='http://papeisdeparedeparacelular.org/images/gif-escudo-fla-3d.gif' />
+                    </Box>
+                </>
+            )
+        }
 
-            return mensagemFilter.id != mensagemId
+        function handleDeleteMensagem(event) {
+            const mensagemId = Number(event.target.dataset.id)
+            const mensagemListFilter = mensagemList.filter((mensagemFilter) => {
+    
+                return mensagemFilter.id != mensagemId
+    
+            })
+    
+            setMensagemList(mensagemListFilter)
+    
+        }
 
-        })
-
-        setMensagemList(mensagemListFilter)
-
-    }
     return (
         <Box
             styleSheet={{
@@ -133,6 +186,7 @@ export default function ChatPage() {
          </Box>
          )
       }
+
 
      function Header() {
      return (
